@@ -41,6 +41,10 @@ h1{font-size:19px;font-weight:800;margin:0;letter-spacing:-.01em}
 .bar.low>i{background:var(--warn)}
 .ok{color:var(--accent);font-weight:700}.bad{color:var(--warn);font-weight:700}
 .linkbtn{background:none;border:0;padding:0;color:var(--mute);text-decoration:underline;font-size:13px}
+.tsplit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.tsplit div{background:var(--soft);border-radius:12px;padding:10px 12px}
+.tsplit small{display:block;color:var(--mute);font-size:12px;font-weight:600}
+.tsplit b{font-size:20px;font-weight:800}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
 .stats small{display:block;color:var(--mute);font-size:12px}
@@ -100,6 +104,10 @@ dialog h2{font-size:17px;margin:0 0 6px}
     <div class="big" id="today">₱0</div>
     <div class="bar" id="bar"><i style="width:0"></i></div>
     <div id="todayMsg" class="mute"></div>
+    <div class="tsplit">
+      <div><small>Wallet today</small><b id="tW">₱0</b><small id="tWn">0 bookings</small></div>
+      <div><small>Cash today</small><b id="tC">₱0</b><small id="tCn">0 bookings</small></div>
+    </div>
   </section>
 
   <div class="stats">
@@ -285,6 +293,11 @@ function render(){
   $("todayMsg").innerHTML=S.todayTot>=target
     ?'<span class="ok">Target hit! 🎉</span> · '+S.td.length+' bookings'
     :'<span class="bad">Short by '+peso(target-S.todayTot)+'</span> · '+S.td.length+' bookings';
+  $("tW").textContent=peso(S.td.filter(b=>b.type==="W").reduce((s,b)=>s+tot(b),0));
+  $("tC").textContent=peso(S.td.filter(b=>b.type==="C").reduce((s,b)=>s+tot(b),0));
+  const nW=S.td.filter(b=>b.type==="W").length,nC=S.td.filter(b=>b.type==="C").length;
+  $("tWn").textContent=nW+(nW===1?" booking":" bookings");
+  $("tCn").textContent=nC+(nC===1?" booking":" bookings");
   $("sMonth").textContent=peso(S.cmTot);
   $("sAvg").textContent=peso(S.avgDay);
   $("sProj").textContent=peso(S.proj);
