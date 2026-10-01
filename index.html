@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xpress Booking Tracker</title>
+<meta name="theme-color" content="#0d7a5a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Xpress">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#f4f7f5;--card:#fff;--ink:#14201b;--mute:#64736c;--line:#e2e9e5;--accent:#0d7a5a;--on:#fff;--warn:#c2410c;--soft:#e7f3ed;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1512;--card:#151f1b;--ink:#e8f0ec;--mute:#8fa39a;--line:#243029;--accent:#3ddc97;--on:#06281b;--warn:#ff8a5c;--soft:#16302a}}
+:root[data-theme="dark"]{--bg:#0e1512;--card:#151f1b;--ink:#e8f0ec;--mute:#8fa39a;--line:#243029;--accent:#3ddc97;--on:#06281b;--warn:#ff8a5c;--soft:#16302a}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.4 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 48px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:19px;font-weight:800;margin:0;letter-spacing:-.01em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.btn{height:40px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn.danger{color:var(--warn)}
+.mute{color:var(--mute)}
+.hero .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.big{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.bar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden;margin:12px 0 8px}
+.bar>i{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .4s}
+.bar.low>i{background:var(--warn)}
+.ok{color:var(--accent);font-weight:700}.bad{color:var(--warn);font-weight:700}
+.linkbtn{background:none;border:0;padding:0;color:var(--mute);text-decoration:underline;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stats small{display:block;color:var(--mute);font-size:12px}
+.stats b{font-size:17px;font-weight:700}
+form.add{display:grid;gap:12px}
+label{display:block;font-size:13px;font-weight:600;color:var(--mute);margin-bottom:5px}
+.inp{width:100%;height:46px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;font-weight:600}
+.inp.price{font-size:22px;font-weight:700;height:54px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden;height:46px}
+.seg button{border:0;background:var(--bg);color:var(--mute);font-weight:700}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--on)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:30px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--mute);font-weight:600;font-size:13px}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--soft);border-radius:12px;padding:4px;margin:16px 0 12px}
+.tabs button{border:0;background:none;height:38px;border-radius:9px;font-weight:700;color:var(--mute)}
+.tabs button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.day{display:flex;justify-content:space-between;align-items:center;margin:16px 4px 6px;font-size:13px;font-weight:700;color:var(--mute)}
+.item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.tag{width:34px;height:34px;border-radius:9px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.item .m{flex:1;min-width:0}
+.item b{font-size:16px}
+.pill{font-size:12px;color:var(--accent);background:var(--soft);border-radius:6px;padding:1px 6px;margin-left:6px;font-weight:700}
+.x{width:36px;height:36px;border-radius:9px;border:0;background:none;color:var(--mute);font-size:20px}
+.x:hover{color:var(--warn)}
+.empty{text-align:center;padding:36px 12px;color:var(--mute);border:1px dashed var(--line);border-radius:14px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:440px}
+th{font-size:12px;color:var(--mute);font-weight:600;text-align:right;padding:6px 8px}
+td{padding:11px 8px;text-align:right;border-top:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;padding-left:0;font-weight:700}
+.kv{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.kv:first-child{border-top:0}
+.split{height:10px;border-radius:99px;overflow:hidden;display:flex;background:var(--soft);margin:8px 0 6px}
+.split i{display:block;height:100%}
+footer{text-align:center;color:var(--mute);font-size:12px;margin-top:28px}
+footer a{color:inherit}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:20px;width:min(420px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h2{font-size:17px;margin:0 0 6px}
+.stack{display:grid;gap:8px;margin-top:14px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;font-weight:600;display:none;align-items:center;gap:12px;z-index:50;max-width:92vw}
+#toast button{background:none;border:0;color:var(--accent);font-weight:800;padding:0}
+@media (prefers-reduced-motion:reduce){.bar>i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Xpress Booking Tracker</h1>
+    <button class="btn sm" id="openBackup">Backup</button>
+  </div>
+
+  <section class="card hero">
+    <div class="row"><span class="mute">Today's earnings</span><button class="linkbtn" id="editTarget"></button></div>
+    <div class="big" id="today">₱0</div>
+    <div class="bar" id="bar"><i style="width:0"></i></div>
+    <div id="todayMsg" class="mute"></div>
+  </section>
+
+  <div class="stats">
+    <div><small>This month</small><b id="sMonth">₱0</b></div>
+    <div><small>Avg per day</small><b id="sAvg">₱0</b></div>
+    <div><small>Projected</small><b id="sProj">₱0</b></div>
+  </div>
+
+  <section class="card">
+    <form class="add" id="form" autocomplete="off">
+      <div>
+        <label for="price">Price</label>
+        <input class="inp price" id="price" type="number" inputmode="numeric" min="1" placeholder="₱0" required>
+      </div>
+      <div class="two">
+        <div>
+          <label>Payment</label>
+          <div class="seg" id="typeSeg">
+            <button type="button" data-t="W" aria-pressed="false">Wallet</button>
+            <button type="button" data-t="C" aria-pressed="true">Cash</button>
+          </div>
+        </div>
+        <div>
+          <label for="tip">Tip (optional)</label>
+          <input class="inp" id="tip" type="number" inputmode="numeric" min="0" placeholder="₱0">
+        </div>
+      </div>
+      <div>
+        <label for="date">Date</label>
+        <input class="inp" id="date" type="date" required>
+      </div>
+      <button class="btn pri" style="height:48px;font-size:16px" type="submit">Add booking</button>
+    </form>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="list" aria-selected="true">Bookings</button>
+    <button role="tab" data-tab="months" aria-selected="false">Months</button>
+    <button role="tab" data-tab="stats" aria-selected="false">Stats</button>
+  </div>
+
+  <section id="p-list">
+    <div id="list"></div>
+    <button class="btn" id="histBtn" style="width:100%;margin-top:10px" hidden></button>
+    <div id="histWrap" hidden>
+      <div class="chips" id="filters" style="margin-top:14px">
+        <button class="chip" data-f="ALL" aria-pressed="true">All</button>
+        <button class="chip" data-f="W" aria-pressed="false">Wallet</button>
+        <button class="chip" data-f="C" aria-pressed="false">Cash</button>
+        <button class="chip" data-f="MONTH" aria-pressed="false">This month</button>
+      </div>
+      <div id="hist"></div>
+    </div>
+  </section>
+  <section id="p-months" hidden><div class="card scroll" id="months"></div></section>
+  <section id="p-stats" hidden><div class="card" id="stats"></div></section>
+
+  <footer>Made by Edwin Macatangay Perez · <a href="https://instagram.com/chib_e" target="_blank" rel="noopener noreferrer">@chib_e</a> · v5.1</footer>
+</div>
+
+<dialog id="dBackup">
+  <h2>Backup</h2>
+  <div class="mute">Save or restore your bookings.</div>
+  <div class="stack">
+    <button class="btn pri" id="bExport">Export (download JSON)</button>
+    <button class="btn" id="bImport">Import from file</button>
+    <button class="btn" id="bRecover">Recover saved data</button>
+    <button class="btn" data-close>Close</button>
+  </div>
+  <input type="file" id="file" accept=".json,application/json" hidden>
+</dialog>
+
+<dialog id="dImport">
+  <h2>Import bookings?</h2>
+  <div class="mute" id="impInfo"></div>
+  <div class="stack">
+    <button class="btn pri" id="iMerge">Merge (add only)</button>
+    <button class="btn danger" id="iReplace">Replace all (cannot be undone)</button>
+    <button class="btn" data-close>Cancel</button>
+  </div>
+</dialog>
+
+<dialog id="dRecover">
+  <h2>Recover</h2>
+  <div class="mute">Backups found on this device.</div>
+  <div class="stack" id="recList"></div>
+  <div class="stack"><button class="btn" data-close>Close</button></div>
+</dialog>
+
+<dialog id="dTarget">
+  <h2>Daily target</h2>
+  <label for="tInput" style="margin-top:10px">Daily target (₱)</label>
+  <input class="inp" id="tInput" type="number" inputmode="numeric" min="1">
+  <div class="stack"><button class="btn pri" id="tSave">Save target</button><button class="btn" data-close>Cancel</button></div>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script>
+const READ=["xpress-bookings-v5","xpress-bookings-v4","xpress-bookings-v3","xpress-bookings-v2","xpress-bookings","xpress-bookings-v1","xpress_booking_tracker","booking-tracker","bookings","xpress_bookings_backup"];
+const WRITE=["xpress-bookings-v5","xpress-bookings-v4","xpress-bookings-v3","xpress-bookings-v2","xpress-bookings","xpress_bookings_backup"];
+const TK="xpress-target",VER="5.1";
+const $=id=>document.getElementById(id);
+const peso=n=>"₱"+Math.round(n).toLocaleString("en-PH");
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const tot=b=>b.price+(b.tip||0);
+let B=[],target=1280,type="C",filter="ALL",lastDel=null,pending=null,tt,showHist=false;
+
+function norm(e){
+  if(!e||typeof e!=="object")return null;
+  const price=Number(e.price);if(!price||price<=0)return null;
+  let t=null;
+  if(e.type==="W"||e.type==="C")t=e.type;
+  else if(typeof e.paymentMethod==="string"){const s=e.paymentMethod.toUpperCase();t=(s==="WALLET"||s==="W")?"W":(s==="CASH"||s==="C")?"C":null}
+  if(!t)return null;
+  let d=null;
+  if(typeof e.date==="string"&&/^\d{4}-\d{2}-\d{2}/.test(e.date))d=e.date.slice(0,10);
+  else if(typeof e.dateKey==="string"&&/^\d{4}-\d{2}-\d{2}/.test(e.dateKey))d=e.dateKey.slice(0,10);
+  else if(+e.timestamp>0)d=ymd(new Date(+e.timestamp));
+  else if(typeof e.date==="string"){const x=new Date(e.date);if(!isNaN(x))d=ymd(x)}
+  if(!d)d=ymd(new Date());
+  const tip=Math.max(0,Number(e.tip)||0);
+  const id=(typeof e.id==="string"&&e.id?e.id:uid()).replace(/[^\w-]/g,"")||uid();
+  const ts=+e.timestamp>0?+e.timestamp:new Date(d).getTime();
+  const o={id,price,type:t,tip,date:d,timestamp:ts};
+  if(e.odo!=null&&!isNaN(Number(e.odo)))o.odo=Number(e.odo);
+  return o;
+}
+function parse(txt){
+  if(!txt)return null;
+  try{const j=JSON.parse(txt);const a=Array.isArray(j)?j:(j&&Array.isArray(j.bookings)?j.bookings:null);
+    if(!a)return null;const r=a.map(norm).filter(Boolean);return(a.length&&!r.length)?null:r}catch(e){return null}
+}
+function save(){
+  const s=JSON.stringify(B);
+  WRITE.forEach(k=>{try{localStorage.setItem(k,s)}catch(e){}});
+  try{localStorage.setItem("xpress-bookings",s)}catch(e){}
+}
+function load(){
+  try{const t=Number(localStorage.getItem(TK));if(t>0)target=t}catch(e){}
+  let best=null;
+  READ.forEach(k=>{try{const r=parse(localStorage.getItem(k));if(r&&r.length&&(!best||r.length>best.length))best=r}catch(e){}});
+  B=best||[];
+}
+function toast(msg,action){
+  const t=$("toast");t.innerHTML="";const s=document.createElement("span");s.textContent=msg;t.append(s);
+  if(action){const b=document.createElement("button");b.textContent=action.label;b.onclick=()=>{action.fn();t.style.display="none"};t.append(b)}
+  t.style.display="flex";clearTimeout(tt);tt=setTimeout(()=>t.style.display="none",action?6000:2500);
+}
+
+function stats(){
+  const now=new Date(),mk=ymd(now).slice(0,7);
+  const total=B.reduce((s,b)=>s+tot(b),0);
+  const days=new Set(B.map(b=>b.date)).size;
+  const cm=B.filter(b=>b.date.startsWith(mk));
+  const cmTot=cm.reduce((s,b)=>s+tot(b),0);
+  const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const todayKey=ymd(now);
+  const td=B.filter(b=>b.date===todayKey);
+  const months=new Map();
+  B.forEach(b=>{const k=b.date.slice(0,7);if(!months.has(k))months.set(k,{t:0,n:0,d:new Set()});const m=months.get(k);m.t+=tot(b);m.n++;m.d.add(b.date)});
+  return{total,days,avgDay:days?total/days:0,cm,cmTot,proj:cmTot/now.getDate()*dim,td,todayTot:td.reduce((s,b)=>s+tot(b),0),months,todayKey,
+    w:B.filter(b=>b.type==="W").reduce((s,b)=>s+b.price,0),c:B.filter(b=>b.type==="C").reduce((s,b)=>s+b.price,0),
+    tips:B.reduce((s,b)=>s+(b.tip||0),0),tipped:B.filter(b=>b.tip>0).length};
+}
+function dayLabel(d,today){
+  if(d===today)return"Today";
+  const y=new Date();y.setDate(y.getDate()-1);if(d===ymd(y))return"Yesterday";
+  const [Y,M,D]=d.split("-").map(Number);
+  return new Date(Y,M-1,D).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+}
+function monthLabel(k){const [Y,M]=k.split("-").map(Number);return new Date(Y,M-1,1).toLocaleDateString("en-US",{month:"short",year:"numeric"})}
+
+function render(){
+  const S=stats();
+  $("editTarget").textContent="Target "+peso(target)+"/day · edit";
+  $("today").textContent=peso(S.todayTot);
+  const pct=Math.min(100,S.todayTot/target*100);
+  $("bar").firstElementChild.style.width=pct+"%";
+  $("bar").classList.toggle("low",S.todayTot<target);
+  $("todayMsg").innerHTML=S.todayTot>=target
+    ?'<span class="ok">Target hit! 🎉</span> · '+S.td.length+' bookings'
+    :'<span class="bad">Short by '+peso(target-S.todayTot)+'</span> · '+S.td.length+' bookings';
+  $("sMonth").textContent=peso(S.cmTot);
+  $("sAvg").textContent=peso(S.avgDay);
+  $("sProj").textContent=peso(S.proj);
+
+  // list: today (can delete) + hidden read-only history
+  const item=(b,del)=>'<div class="item"><div class="tag">'+b.type+'</div><div class="m"><b>'+peso(b.price)+'</b>'+(b.tip>0?'<span class="pill">+'+peso(b.tip)+' tip</span>':'')+
+    '<div class="mute" style="font-size:12px">'+(b.type==="W"?"Wallet":"Cash")+(b.tip>0?" · total "+peso(tot(b)):"")+'</div></div>'+
+    (del?'<button class="x" data-del="'+b.id+'" aria-label="Delete booking">×</button>':'')+'</div>';
+  const todayL=S.td.slice().sort((a,b)=>b.timestamp-a.timestamp);
+  $("list").innerHTML=todayL.length
+    ?'<div class="day"><span>Today · '+todayL.length+'</span><span class="'+(S.todayTot>=target?"ok":"")+'">'+peso(S.todayTot)+'</span></div>'+todayL.map(b=>item(b,true)).join("")
+    :'<div class="empty" style="margin-top:12px">No bookings today yet.<br>Enter a price above and tap Add booking.</div>';
+  const older=B.filter(b=>b.date!==S.todayKey);
+  $("histBtn").hidden=!older.length;
+  $("histBtn").textContent=showHist?"Hide history":"Show history ("+older.length+")";
+  $("histWrap").hidden=!(showHist&&older.length);
+  if(showHist&&older.length){
+    let L=older.sort((a,b)=>b.date.localeCompare(a.date)||b.timestamp-a.timestamp);
+    if(filter==="W"||filter==="C")L=L.filter(b=>b.type===filter);
+    if(filter==="MONTH")L=L.filter(b=>b.date.startsWith(S.todayKey.slice(0,7)));
+    const g=new Map();L.forEach(b=>{if(!g.has(b.date))g.set(b.date,[]);g.get(b.date).push(b)});
+    let h="";
+    g.forEach((arr,d)=>{
+      const dt=arr.reduce((s,b)=>s+tot(b),0);
+      h+='<div class="day"><span>'+dayLabel(d,S.todayKey)+' · '+arr.length+'</span><span class="'+(dt>=target?"ok":"")+'">'+peso(dt)+'</span></div>';
+      arr.forEach(b=>{h+=item(b,false)});
+    });
+    $("hist").innerHTML=h||'<div class="empty" style="margin-top:12px">No bookings match this filter.</div>';
+  }
+
+  // months
+  const ms=[...S.months.entries()].sort((a,b)=>b[0].localeCompare(a[0]));
+  $("months").innerHTML=ms.length?'<table><thead><tr><th>Month</th><th>Total</th><th>Days</th><th>Avg/day</th><th>Bookings</th></tr></thead><tbody>'+
+    ms.map(([k,m])=>{const a=m.t/m.d.size;return'<tr><td>'+monthLabel(k)+'</td><td><b>'+peso(m.t)+'</b></td><td>'+m.d.size+'</td><td class="'+(a>=target?"ok":"")+'">'+peso(a)+'</td><td>'+m.n+'</td></tr>'}).join("")+'</tbody></table>'
+    :'<div class="empty">No data yet.</div>';
+
+  // stats
+  const wp=S.w+S.c?Math.round(S.w/(S.w+S.c)*100):0;
+  const hit=S.avgDay>=target;
+  $("stats").innerHTML=
+    '<div class="kv"><span class="mute">Total earnings</span><b>'+peso(S.total)+'</b></div>'+
+    '<div class="kv"><span class="mute">Bookings</span><b>'+B.length+'</b></div>'+
+    '<div class="kv"><span class="mute">Average per day</span><b class="'+(hit?"ok":"bad")+'">'+peso(S.avgDay)+(hit?" ✓":" · short by "+peso(target-S.avgDay))+'</b></div>'+
+    '<div class="kv"><span class="mute">Average per booking</span><b>'+peso(B.length?S.total/B.length:0)+'</b></div>'+
+    '<div class="kv"><span class="mute">Average per month</span><b>'+peso(S.months.size?S.total/S.months.size:0)+'</b></div>'+
+    '<div class="kv"><span class="mute">Tips</span><b>'+peso(S.tips)+' · '+(B.length?Math.round(S.tipped/B.length*100):0)+'% of bookings</b></div>'+
+    '<div style="padding-top:12px;border-top:1px solid var(--line)"><span class="mute">Wallet vs Cash</span>'+
+    '<div class="split"><i style="width:'+wp+'%;background:var(--accent)"></i><i style="width:'+(S.w+S.c?100-wp:0)+'%;background:var(--mute);opacity:.5"></i></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:13px"><span>Wallet '+peso(S.w)+' ('+wp+'%)</span><span>Cash '+peso(S.c)+' ('+(S.w+S.c?100-wp:0)+'%)</span></div></div>';
+}
+
+// add
+$("date").value=ymd(new Date());
+$("typeSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;type=b.dataset.t;
+  [...$("typeSeg").children].forEach(x=>x.setAttribute("aria-pressed",x===b))});
+$("form").addEventListener("submit",e=>{
+  e.preventDefault();
+  const price=Number($("price").value),tip=Number($("tip").value)||0;
+  if(!price||price<=0||tip<0)return;
+  B.unshift({id:uid(),price,type,tip,date:$("date").value||ymd(new Date()),timestamp:Date.now()});
+  save();render();
+  $("price").value="";$("tip").value="";$("date").value=ymd(new Date());$("price").focus();
+  toast("Added: "+peso(price+tip));
+});
+$("list").addEventListener("click",e=>{
+  const b=e.target.closest("[data-del]");if(!b)return;
+  const i=B.findIndex(x=>x.id===b.dataset.del);if(i<0)return;
+  if(B[i].date!==ymd(new Date())){toast("Past bookings are locked");return}
+  lastDel={item:B[i],i};B.splice(i,1);save();render();
+  toast("Booking deleted",{label:"Undo",fn:()=>{B.splice(lastDel.i,0,lastDel.item);save();render()}});
+});
+
+// tabs & filters
+$("histBtn").onclick=()=>{showHist=!showHist;render()};
+document.querySelector(".tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  ["list","months","stats"].forEach(t=>$("p-"+t).hidden=t!==b.dataset.tab);
+});
+$("filters").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;
+  [...$("filters").children].forEach(x=>x.setAttribute("aria-pressed",x===b));render();
+});
+
+// target
+$("editTarget").onclick=()=>{$("tInput").value=target;$("dTarget").showModal()};
+$("tSave").onclick=()=>{const v=Number($("tInput").value);if(!v||v<=0){toast("Enter a valid target");return}
+  target=v;try{localStorage.setItem(TK,String(v))}catch(e){}$("dTarget").close();render();toast("Target: "+peso(v)+"/day")};
+
+// dialogs
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+$("openBackup").onclick=()=>$("dBackup").showModal();
+
+// export
+$("bExport").onclick=()=>{
+  try{
+    const data={version:VER,exportedAt:new Date().toISOString(),bookings:B,count:B.length,total:B.reduce((s,b)=>s+tot(b),0)};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+    const a=document.createElement("a");a.href=url;a.download="xpress-backup-"+ymd(new Date())+".json";
+    document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
+    save();$("dBackup").close();toast("Exported "+B.length+" bookings");
+  }catch(e){toast("Export failed. Try again.")}
+};
+
+// import
+$("bImport").onclick=()=>$("file").click();
+$("file").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const list=parse(r.result);
+    if(!list||!list.length){toast("No valid bookings found in this file");}
+    else{pending=list.sort((a,b)=>b.timestamp-a.timestamp);
+      $("impInfo").textContent="The file has "+pending.length+" bookings. You currently have "+B.length+".";
+      $("dBackup").close();$("dImport").showModal()}
+    $("file").value="";
+  };
+  r.readAsText(f);
+};
+$("iMerge").onclick=()=>{
+  const ids=new Set(B.map(b=>b.id));pending.forEach(b=>{if(!ids.has(b.id))B.push(b)});
+  B.sort((a,b)=>b.timestamp-a.timestamp);save();render();$("dImport").close();toast("Merged · total "+B.length);
+};
+$("iReplace").onclick=()=>{B=[...pending];save();render();$("dImport").close();toast("Replaced · "+B.length+" bookings")};
+
+// recover
+$("bRecover").onclick=()=>{
+  const found=[];
+  READ.forEach(k=>{try{const r=parse(localStorage.getItem(k));if(r&&r.length)found.push({k,r})}catch(e){}});
+  found.sort((a,b)=>b.r.length-a.r.length);
+  const box=$("recList");box.innerHTML="";
+  if(!found.length)box.innerHTML='<div class="empty">No backups found on this device.</div>';
+  found.forEach(f=>{
+    const row=document.createElement("div");row.className="item";
+    row.innerHTML='<div class="m"><b></b><div class="mute" style="font-size:12px"></div></div>';
+    row.querySelector("b").textContent=f.r.length+" bookings";
+    row.querySelector(".mute").textContent=peso(f.r.reduce((s,b)=>s+tot(b),0))+" · "+f.k;
+    const btn=document.createElement("button");btn.className="btn sm";btn.textContent="Restore";
+    btn.onclick=()=>{B=f.r;save();render();$("dRecover").close();toast("Restored "+B.length+" bookings")};
+    row.append(btn);box.append(row);
+  });
+  $("dBackup").close();$("dRecover").showModal();
+};
+
+load();render();
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
