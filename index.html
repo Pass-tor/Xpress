@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Xpress Booking Tracker</title>
@@ -165,16 +186,45 @@ dialog h2{font-size:17px;margin:0 0 6px}
   <section id="p-months" hidden><div class="card scroll" id="months"></div></section>
   <section id="p-stats" hidden><div class="card" id="stats"></div></section>
 
-  <footer>Made by Edwin Macatangay Perez · <a href="https://instagram.com/chib_e" target="_blank" rel="noopener noreferrer">@chib_e</a> · v5.1</footer>
+  <footer>Made by Edwin Macatangay Perez · <a href="https://instagram.com/chib_e" target="_blank" rel="noopener noreferrer">@chib_e</a> · v5.5 · auto-backup + Telegram</footer>
 </div>
 
 <dialog id="dBackup">
   <h2>Backup</h2>
   <div class="mute">Save or restore your bookings.</div>
+  <div style="margin:12px 0;padding:10px 12px;background:var(--soft);border-radius:10px;font-size:13px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">Auto backup (Local)</b><span id="autoBadge" style="font-size:11px;background:var(--card);border:1px solid var(--line);padding:2px 8px;border-radius:99px">Checking...</span></div>
+    <div class="mute" id="autoInfo" style="margin-top:6px;font-size:12px">Daily local backup enabled.</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="autoDlToggle"> Auto-download file every day</label>
+    </div>
+  </div>
+  <div style="margin:12px 0;padding:12px 12px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">Telegram Auto Backup</b><span id="tgBadge" style="font-size:11px;background:var(--soft);border:1px solid var(--line);padding:2px 8px;border-radius:99px">Not set</span></div>
+    <div class="mute" id="tgInfo" style="margin-top:6px;font-size:12px">Auto-send backup to your Telegram daily. Mas reliable kesa Drive!</div>
+    <div style="margin-top:10px;display:grid;gap:8px">
+      <input id="tgBotToken" class="inp" style="height:36px;font-size:12px" placeholder="Bot Token (from @BotFather)">
+      <input id="tgChatId" class="inp" style="height:36px;font-size:12px" placeholder="Chat ID (your Telegram ID)">
+      <div style="display:flex;gap:8px">
+        <button class="btn sm" id="bTgSave" style="flex:1">Save</button>
+        <button class="btn sm" id="bTgTest" style="flex:1">Test Send</button>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600"><input type="checkbox" id="tgAutoToggle"> Auto-send to Telegram daily</label>
+      <button class="btn sm" id="bTgNow">Send backup now to Telegram</button>
+    </div>
+    <details style="margin-top:10px"><summary style="font-size:12px;cursor:pointer">Paano i-setup? (1 min)</summary>
+      <div style="margin-top:8px;font-size:12px;line-height:1.5" class="mute">
+        <b>1. Gawa ka Bot:</b><br>Open Telegram > search <b>@BotFather</b> > /newbot > name: Xpress Backup > username: xpress_yourname_bot > copy token<br><br>
+        <b>2. Kunin Chat ID:</b><br>Search <b>@userinfobot</b> sa Telegram > Start > copy yung <b>Id</b> mo (numbers lang)<br><br>
+        <b>3. Start mo Bot mo:</b><br>Hanapin mo yung bot na ginawa mo, pindutin Start<br><br>
+        <b>4. Paste dito token at chat ID > Save > Test Send</b>
+      </div>
+    </details>
+  </div>
   <div class="stack">
     <button class="btn pri" id="bExport">Export (download JSON)</button>
     <button class="btn" id="bImport">Import from file</button>
-    <button class="btn" id="bRecover">Recover saved data</button>
+    <button class="btn" id="bRecover">Recover saved data (incl. auto backups)</button>
     <button class="btn" data-close>Close</button>
   </div>
   <input type="file" id="file" accept=".json,application/json" hidden>
@@ -209,7 +259,12 @@ dialog h2{font-size:17px;margin:0 0 6px}
 <script>
 const READ=["xpress-bookings-v5","xpress-bookings-v4","xpress-bookings-v3","xpress-bookings-v2","xpress-bookings","xpress-bookings-v1","xpress_booking_tracker","booking-tracker","bookings","xpress_bookings_backup"];
 const WRITE=["xpress-bookings-v5","xpress-bookings-v4","xpress-bookings-v3","xpress-bookings-v2","xpress-bookings","xpress_bookings_backup"];
-const TK="xpress-target",VER="5.1";
+const TK="xpress-target",VER="5.2";
+const AUTO_PREFIX="xpress-auto-backup-";
+const AUTO_LAST="xpress-auto-last-date";
+const AUTO_DL_LAST="xpress-auto-dl-last-date";
+const AUTO_TOGGLE="xpress-auto-dl-enabled";
+const AUTO_KEEP=30;
 const $=id=>document.getElementById(id);
 const peso=n=>"₱"+Math.round(n).toLocaleString("en-PH");
 const pad=n=>String(n).padStart(2,"0");
@@ -243,10 +298,145 @@ function parse(txt){
   try{const j=JSON.parse(txt);const a=Array.isArray(j)?j:(j&&Array.isArray(j.bookings)?j.bookings:null);
     if(!a)return null;const r=a.map(norm).filter(Boolean);return(a.length&&!r.length)?null:r}catch(e){return null}
 }
+
+
+// --- TELEGRAM BACKUP ---
+const TG_TOKEN_KEY="xpress-tg-token";
+const TG_CHAT_KEY="xpress-tg-chat";
+const TG_ENABLED_KEY="xpress-tg-enabled";
+const TG_LAST_KEY="xpress-tg-last-date";
+
+function getTgConfig(){
+  try{return {token:localStorage.getItem(TG_TOKEN_KEY)||"", chatId:localStorage.getItem(TG_CHAT_KEY)||"", enabled:localStorage.getItem(TG_ENABLED_KEY)==="1"}}catch(e){return {token:"",chatId:"",enabled:false}}
+}
+function updateTgUI(){
+  const cfg=getTgConfig();
+  const badge=$("tgBadge"), info=$("tgInfo");
+  const has=cfg.token && cfg.chatId;
+  if(badge) badge.textContent = has ? (cfg.enabled ? "ON · Connected ✓" : "Saved · OFF") : "Not set";
+  if(info) info.textContent = has ? (cfg.enabled ? "Auto-send ON · Last: "+(localStorage.getItem(TG_LAST_KEY)||"never") : "Saved. Turn ON auto-send.") : "Setup bot first (see guide below).";
+  if($("tgBotToken")) $("tgBotToken").value=cfg.token;
+  if($("tgChatId")) $("tgChatId").value=cfg.chatId;
+  if($("tgAutoToggle")) $("tgAutoToggle").checked=cfg.enabled;
+}
+
+async function sendToTelegram(isAuto=false){
+  const cfg=getTgConfig();
+  if(!cfg.token || !cfg.chatId){
+    if(!isAuto) toast("Setup Telegram token & chat ID first");
+    return false;
+  }
+  if(!B.length){ if(!isAuto) toast("No bookings"); return false; }
+  try{
+    const data={version:VER,exportedAt:new Date().toISOString(),bookings:B,count:B.length,total:B.reduce((s,b)=>s+tot(b),0)};
+    const jsonStr=JSON.stringify(data,null,2);
+    const blob=new Blob([jsonStr],{type:"application/json"});
+    const form=new FormData();
+    const fileName="xpress-backup-"+ymd(new Date())+".json";
+    form.append("chat_id", cfg.chatId);
+    form.append("document", blob, fileName);
+    form.append("caption", `Xpress Backup • ${ymd(new Date())} • ${B.length} bookings • Total ${peso(data.total)} • ${isAuto ? "Auto" : "Manual"}`);
+    const res=await fetch(`https://api.telegram.org/bot${cfg.token}/sendDocument`,{method:"POST", body:form});
+    const out=await res.json();
+    if(out.ok){
+      toast(isAuto ? "Auto-sent to Telegram ✓" : "Sent to Telegram ✓");
+      try{localStorage.setItem(TG_LAST_KEY, ymd(new Date()))}catch(e){}
+      return true;
+    } else {
+      console.log(out);
+      toast("Telegram failed: "+(out.description||"check token/chat ID"));
+      return false;
+    }
+  }catch(e){console.log(e); toast("Telegram error - check internet"); return false}
+}
+function maybeAutoTelegram(){
+  try{
+    const cfg=getTgConfig();
+    if(!cfg.enabled) return;
+    const last=localStorage.getItem(TG_LAST_KEY);
+    const today=ymd(new Date());
+    if(last===today) return;
+    sendToTelegram(true);
+  }catch(e){}
+}
+
+
+// --- AUTO BACKUP DAILY ---
+function autoKeyFor(dateStr){return AUTO_PREFIX+dateStr}
+function getAutoKeys(){const out=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(AUTO_PREFIX))out.push(k)}return out.sort().reverse()}
+function pruneAutoBackups(){const keys=getAutoKeys();if(keys.length<=AUTO_KEEP)return;keys.slice(AUTO_KEEP).forEach(k=>{try{localStorage.removeItem(k)}catch(e){}})}
+function downloadBackupBlob(suffix=""){
+  try{
+    const data={version:VER,exportedAt:new Date().toISOString(),bookings:B,count:B.length,total:B.reduce((s,b)=>s+tot(b),0),auto:suffix.includes("auto")};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+    const a=document.createElement("a");a.href=url;a.download="xpress-backup-"+(suffix||ymd(new Date()))+".json";
+    document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+    return true;
+  }catch(e){return false}
+}
+function doAutoBackup(force=false, opts={}){
+  try{
+    const today=ymd(new Date());
+    const last=localStorage.getItem(AUTO_LAST);
+    if(!force && last===today && !opts.isSaveTrigger) return {did:false, date:today};
+    const key=autoKeyFor(today);
+    const payload=JSON.stringify({version:VER,exportedAt:new Date().toISOString(),bookings:B});
+    localStorage.setItem(key,payload);
+    localStorage.setItem(AUTO_LAST,today);
+    pruneAutoBackups();
+    // also keep main WRITE fresh
+    WRITE.forEach(k=>{try{localStorage.setItem(k,JSON.stringify(B))}catch(e){}});
+    return {did:true, date:today, key};
+  }catch(e){return {did:false, error:true}}
+}
+function shouldAutoDownloadToday(){
+  try{
+    if(localStorage.getItem(AUTO_TOGGLE)!=="1") return false;
+    const today=ymd(new Date());
+    const lastDl=localStorage.getItem(AUTO_DL_LAST);
+    return lastDl!==today;
+  }catch(e){return false}
+}
+function tryAutoDownload(){
+  if(!shouldAutoDownloadToday()) return false;
+  if(!B.length) return false;
+  const ok=downloadBackupBlob("auto-"+ymd(new Date()));
+  if(ok){
+    try{localStorage.setItem(AUTO_DL_LAST,ymd(new Date()))}catch(e){}
+    toast("Auto backup downloaded: "+B.length+" bookings");
+    return true;
+  }
+  return false;
+}
+function getAutoStatusText(){
+  const keys=getAutoKeys();
+  const last=localStorage.getItem(AUTO_LAST)||"—";
+  return {count:keys.length, last, keys};
+}
+function updateAutoUI(){
+  const s=getAutoStatusText();
+  const badge=$("autoBadge");
+  const info=$("autoInfo");
+  const toggle=$("autoDlToggle");
+  if(badge) badge.textContent = s.count ? s.count+" saved · last "+s.last : "No auto backup yet";
+  if(info) info.textContent = s.count ? "Last auto backup: "+s.last+" · Keeping "+s.count+" of "+AUTO_KEEP+" days." : "Auto backup runs every time you open the app. Keeps "+AUTO_KEEP+" days.";
+  if(toggle){
+    try{toggle.checked = localStorage.getItem(AUTO_TOGGLE)==="1"}catch(e){}
+  }
+}
+
+
 function save(){
   const s=JSON.stringify(B);
   WRITE.forEach(k=>{try{localStorage.setItem(k,s)}catch(e){}});
   try{localStorage.setItem("xpress-bookings",s)}catch(e){}
+  // if bookings changed today, refresh today's auto backup silently
+  try{
+    const today=ymd(new Date());
+    const payload=JSON.stringify({version:VER,exportedAt:new Date().toISOString(),bookings:B});
+    localStorage.setItem(autoKeyFor(today),payload);
+    localStorage.setItem(AUTO_LAST,today);
+  }catch(e){}
 }
 function load(){
   try{const t=Number(localStorage.getItem(TK));if(t>0)target=t}catch(e){}
@@ -389,17 +579,13 @@ $("tSave").onclick=()=>{const v=Number($("tInput").value);if(!v||v<=0){toast("En
 
 // dialogs
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
-$("openBackup").onclick=()=>$("dBackup").showModal();
+$("openBackup").onclick=()=>{updateAutoUI();$("dBackup").showModal();};
+$("autoDlToggle").onchange=(e)=>{try{localStorage.setItem(AUTO_TOGGLE, e.target.checked ? "1" : "0"); localStorage.setItem(AUTO_DL_LAST,""); toast(e.target.checked ? "Auto-download ON" : "Auto-download OFF")}catch(err){}};
 
 // export
 $("bExport").onclick=()=>{
-  try{
-    const data={version:VER,exportedAt:new Date().toISOString(),bookings:B,count:B.length,total:B.reduce((s,b)=>s+tot(b),0)};
-    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
-    const a=document.createElement("a");a.href=url;a.download="xpress-backup-"+ymd(new Date())+".json";
-    document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
-    save();$("dBackup").close();toast("Exported "+B.length+" bookings");
-  }catch(e){toast("Export failed. Try again.")}
+  const ok=downloadBackupBlob(ymd(new Date()));
+  if(ok){save();$("dBackup").close();toast("Exported "+B.length+" bookings")}else{toast("Export failed. Try again.")}
 };
 
 // import
@@ -443,7 +629,30 @@ $("bRecover").onclick=()=>{
 };
 
 load();render();
+// init Telegram UI
+try{ updateTgUI(); }catch(e){}
+$("bTgSave").onclick=()=>{
+  const t=$("tgBotToken").value.trim(), c=$("tgChatId").value.trim();
+  if(!t || !c){toast("Paste token & chat ID"); return}
+  try{localStorage.setItem(TG_TOKEN_KEY,t); localStorage.setItem(TG_CHAT_KEY,c); toast("Telegram saved!"); updateTgUI();}catch(e){toast("Save failed")}
+};
+$("bTgTest").onclick=()=>{ const t=$("tgBotToken").value.trim(), c=$("tgChatId").value.trim(); if(t&&c){try{localStorage.setItem(TG_TOKEN_KEY,t); localStorage.setItem(TG_CHAT_KEY,c);}catch(e){}} sendToTelegram(false); };
+$("bTgNow").onclick=()=>sendToTelegram(false);
+$("tgAutoToggle").onchange=(e)=>{ try{localStorage.setItem(TG_ENABLED_KEY, e.target.checked?"1":"0"); toast(e.target.checked ? "Telegram auto ON" : "Telegram auto OFF"); if(e.target.checked) sendToTelegram(false); updateTgUI(); }catch(err){} };
+
+// auto backup on app open
+try{
+  const res=doAutoBackup(false,{isSaveTrigger:false});
+  maybeAutoTelegram();
+  updateAutoUI();
+  // defer auto download to avoid popup blocker - needs user interaction, so try after 1.5s and also on first click
+  setTimeout(()=>{tryAutoDownload()},1500);
+  let dlTried=false;
+  const onFirstInteract=()=>{if(dlTried) return; dlTried=true; tryAutoDownload(); document.removeEventListener("click", onFirstInteract); document.removeEventListener("touchstart", onFirstInteract);};
+  document.addEventListener("click", onFirstInteract, {once:true});
+  document.addEventListener("touchstart", onFirstInteract, {once:true});
+}catch(e){}
 if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
 </script>
-</body>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
